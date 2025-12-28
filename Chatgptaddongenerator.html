@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultimate Kodi IPTV Addon Generator</title>
+<style>
+:root {
+    --primary-color: #2196F3;
+    --secondary-color: #4CAF50;
+    --error-color: #F44336;
+    --success-color: #4CAF50;
+    --background-color: #F5F5F5;
+    --card-background: #ffffff;
+}
+* {box-sizing: border-box; margin:0; padding:0;}
+body {font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--background-color); padding:20px; color:#333;}
+.container {max-width:1200px;margin:0 auto;background-color:var(--card-background);border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:25px;}
+h1 {text-align:center;color:var(--primary-color);margin-bottom:25px;font-size:2em;}
+.tabs {display:flex;margin-bottom:20px;border-bottom:2px solid #eee;gap:10px;}
+.tab {padding:10px 20px;cursor:pointer;border:none;background:none;font-size:1em;font-weight:500;color:#666;transition:all 0.3s;}
+.tab:hover {color:var(--primary-color);}
+.tab.active {color:var(--primary-color);border-bottom:2px solid var(--primary-color);}
+.form-group {margin-bottom:20px;}
+label {display:block;margin-bottom:8px;font-weight:500;color:#444;}
+input[type="text"], input[type="number"], select, textarea {width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px;transition:border-color 0.3s;}
+input:focus, select:focus, textarea:focus {outline:none;border-color:var(--primary-color);box-shadow:0 0 0 2px rgba(33,150,243,0.1);}
+.settings-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+.button-group {display:flex;gap:10px;margin:25px 0;justify-content:center;}
+button {padding:12px 24px;border:none;border-radius:4px;cursor:pointer;font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.3s;}
+button.primary {background-color:var(--primary-color);color:white;}
+button.secondary {background-color:var(--secondary-color);color:white;}
+button:hover {opacity:0.9;transform:translateY(-1px);}
+#result {margin-top:20px;padding:15px;border:1px solid #ddd;border-radius:4px;background:#F8F9FA;font-family:monospace;white-space:pre-wrap;font-size:13px;max-height:400px;overflow-y:auto;}
+.channel-table {width:100%;border-collapse:collapse;}
+.channel-table th, .channel-table td {border:1px solid #ddd;padding:6px;text-align:left;}
+.channel-table th {background:#f0f0f0;}
+.success-message {color:var(--success-color);padding:10px;border-radius:4px;background-color:rgba(76,175,80,0.1);margin-bottom:15px;}
+.error-message {color:var(--error-color);padding:10px;border-radius:4px;background-color:rgba(244,67,54,0.1);margin-bottom:15px;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Ultimate Kodi IPTV Addon Generator</h1>
+
+<!-- Tabs -->
+<div class="tabs">
+<button class="tab active" onclick="showTab('basic')">Basic Settings</button>
+<button class="tab" onclick="showTab('advanced')">Advanced Settings</button>
+<button class="tab" onclick="showTab('categories')">Categories</button>
+<button class="tab" onclick="showTab('preview')">Channel Preview</button>
+<button class="tab" onclick="showTab('analytics')">Analytics</button>
+<button class="tab" onclick="showTab('test')">Test Stream</button>
+</div>
+
+<!-- Basic Tab -->
+<div id="basic" class="tab-content">
+<div class="form-group"><label>Addon ID:</label><input type="text" id="addonId" value="plugin.video.myiptv" placeholder="e.g., plugin.video.myiptv"></div>
+<div class="form-group"><label>Addon Name:</label><input type="text" id="addonName" value="My IPTV" placeholder="Display name for your addon"></div>
+<div class="form-group"><label>Version:</label><input type="text" id="version" value="1.0.0" placeholder="e.g., 1.0.0"></div>
+<div class="form-group"><label>M3U Content:</label><textarea id="m3uContent" rows="15" placeholder="Paste your M3U content here..."></textarea></div>
+</div>
+
+<!-- Advanced Tab -->
+<div id="advanced" class="tab-content" style="display:none">
+<div class="settings-grid">
+<div class="form-group"><label>Buffer Size (KB):</label><input type="number" id="bufferSize" value="8192" min="1024" max="32768"></div>
+<div class="form-group"><label>Cache Duration (hours):</label><input type="number" id="cacheDuration" value="24" min="1" max="72"></div>
+<div class="form-group"><label>Default Stream Quality:</label><select id="defaultQuality"><option value="best">Best</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+<div class="form-group"><label>EPG Support:</label><select id="enableEpg"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
+<div class="form-group"><label>Connection Timeout (seconds):</label><input type="number" id="timeout" value="30" min="5" max="120"></div>
+<div class="form-group"><label>Retry Attempts:</label><input type="number" id="retryAttempts" value="3" min="0" max="10"></div>
+</div>
+</div>
+
+<!-- Categories Tab -->
+<div id="categories" class="tab-content" style="display:none">
+<div class="form-group"><label>Custom Categories:</label><textarea id="categoriesInput" rows="5" placeholder="One category per line (optional)"></textarea></div>
+<div class="form-group"><label>Category Display Mode:</label><select id="categoryMode"><option value="folders">Folders</option><option value="tabs">Tabs</option><option value="list">List</option></select></div>
+<div class="form-group"><label>Sort Channels:</label><select id="channelSort"><option value="name">By Name</option><option value="number">By Number</option><option value="group">By Group</option></select></div>
+</div>
+
+<!-- Preview Tab -->
+<div id="preview" class="tab-content" style="display:none">
+<button onclick="generateAddonPreview()">Generate Preview</button>
+<div id="channelPreview" style="margin-top:15px;"></div>
+</div>
+
+<!-- Analytics Tab -->
+<div id="analytics" class="tab-content" style="display:none">
+<button onclick="showAnalytics()">Run Analytics</button>
+<pre id="analyticsResult"></pre>
+</div>
+
+<!-- Test Stream Tab -->
+<div id="test" class="tab-content" style="display:none">
+<div class="form-group"><label>Test Stream URL:</label><input type="text" id="testUrl" placeholder="Enter stream URL"><button onclick="testStream()">Play Test</button></div>
+<video id="videoPlayer" controls style="width:100%; margin-top:10px;"></video>
+</div>
+
+<!-- Buttons -->
+<div class="button-group">
+<button class="primary" onclick="generateAddonPreview()"><span>Generate Preview</span></button>
+<button class="secondary" onclick="downloadAddonZip()"><span>Download Addon .zip</span></button>
+</div>
+
+<div id="result"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script>
+// --- Tabs ---
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab=>tab.style.display='none');
+    document.getElementById(tabName).style.display='block';
+    document.querySelectorAll('.tab').forEach(tab=>tab.classList.remove('active'));
+    document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+}
+
+// --- M3U Parser ---
+function parseM3U(content){
+    const lines=content.split('\n');
+    const channels=[];
+    let current=null;
+    for(const line of lines){
+        const trimmed=line.trim();
+        if(trimmed.startsWith('#EXTINF:')){
+            const attrs={
+                name:trimmed.split(',').pop().trim(),
+                logo:(trimmed.match(/tvg-logo="([^"]*)"/)||[])[1]||'',
+                group:(trimmed.match(/group-title="([^"]*)"/)||[])[1]||'Uncategorized',
+                id:(trimmed.match(/tvg-id="([^"]*)"/)||[])[1]||'',
+                epg:(trimmed.match(/tvg-epg="([^"]*)"/)||[])[1]||'',
+                catchup:(trimmed.match(/catchup="([^"]*)"/)||[])[1]||'',
+                shift:(trimmed.match(/tvg-shift="([^"]*)"/)||[])[1]||'0'
+            };
+            current=attrs;
+        } else if(trimmed&&!trimmed.startsWith('#')&&current){current.url=trimmed;channels.push(current);current=null;}
+    }
+    return channels;
+}
+
+// --- Generate Addon XML ---
+function generateAddonXml(addonId,name,version){
+return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="${addonId}" name="${name}" version="${version}" provider-name="Ultimate Generator">
+<requires><import addon="xbmc.python" version="3.0.0"/><import addon="script.module.requests"/><import addon="inputstream.adaptive"/><import addon="script.module.inputstreamhelper" version="0.5.2"/></requires>
+<extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
+<extension point="xbmc.addon.metadata">
+<summary lang="en">Ultimate IPTV Channel Browser</summary>
+<summary lang="de">Ultimativer IPTV Kanal Browser</summary>
+<summary lang="it">Browser Canali IPTV Avanzato</summary>
+<description lang="en">Watch IPTV channels with EPG, categories, and adaptive streaming support.</description>
+<description lang="de">IPTV Kanäle mit EPG, Kategorien und adaptivem Streaming ansehen.</description>
+<description lang="it">Guarda i canali IPTV con EPG, categorie e streaming adattivo.</description>
+<platform>all</platform>
+<license>GPL-3.0</license>
+<assets><icon>resources/media/icon.png</icon><fanart>resources/media/fanart.jpg</fanart></assets>
+</extension></addon>`;
+}
+
+// --- Generate Settings XML ---
+function generateSettingsXml(){
+return `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+<category label="General">
+<setting id="buffer_size" type="number" label="Buffer Size (KB)" default="${document.getElementById('bufferSize').value}"/>
+<setting id="cache_duration" type="number" label="Cache Duration (hours)" default="${document.getElementById('cacheDuration').value}"/>
+<setting id="default_quality" type="enum" label="Default Quality" values="Best|High|Medium|Low" default="0"/>
+<setting id="enable_epg" type="bool" label="Enable EPG" default="${document.getElementById('enableEpg').value}"/>
+</category>
+<category label="Playback">
+<setting id="retry_attempts" type="number" label="Stream Retry Attempts" default="${document.getElementById('retryAttempts').value}"/>
+<setting id="connection_timeout" type="number" label="Connection Timeout (seconds)" default="${document.getElementById('timeout').value}"/>
+</category>
+<category label="Categories">
+<setting id="category_mode" type="enum" label="Category Display Mode" values="Folders|Tabs|List" default="0"/>
+<setting id="sort_channels" type="enum" label="Channel Sort Order" values="Name|Number|Group" default="0"/>
+</category>
+</settings>`;
+}
+
+// --- Generate default.py ---
+function generateDefaultPy(channels){
+const categories=[...new Set(channels.map(ch=>ch.group))];
+const channelsByCategory={};
+categories.forEach(cat=>{channelsByCategory[cat]=channels.filter(ch=>ch.group===cat);});
+return `import sys,xbmc,xbmcgui,xbmcplugin,xbmcaddon,urllib.parse
+ADDON=xbmcaddon.Addon()
+HANDLE=int(sys.argv[1])
+CHANNELS=${JSON.stringify(channelsByCategory)}
+def get_stream_properties(url):
+ props={'inputstream':None,'mimetype':None,'manifest_type':None}
+ url_lower=url.lower()
+ if '.m3u8' in url_lower: props['inputstream']='inputstream.adaptive';props['mimetype']='application/vnd.apple.mpegurl';props['manifest_type']='hls'
+ elif '.mpd' in url_lower: props['inputstream']='inputstream.adaptive';props['mimetype']='application/dash+xml';props['manifest_type']='mpd'
+ elif '.ism' in url_lower: props['inputstream']='inputstream.adaptive';props['mimetype']='application/vnd.ms-sstr+xml';props['manifest_type']='ism'
+ return props
+def show_categories():
+ mode=ADDON.getSetting('category_mode')
+ for cat in sorted(CHANNELS):
+  li=xbmcgui.ListItem(label=cat)
+  url=f"{sys.argv[0]}?action=category&name={urllib.parse.quote(cat)}"
+  xbmcplugin.addDirectoryItem(HANDLE,url,li,True)
+ xbmcplugin.endOfDirectory(HANDLE)
+def show_category(name):
+ channels=CHANNELS.get(name,[])
+ sort_method=ADDON.getSetting('sort_channels')
+ if sort_method=='0': channels.sort(key=lambda x:x['name'])
+ elif sort_method=='1': channels.sort(key=lambda x:x.get('number',9999))
+ elif sort_method=='2': channels.sort(key=lambda x:x['group'])
+ for ch in channels: add_channel_item(ch)
+ xbmcplugin.endOfDirectory(HANDLE)
+def add_channel_item(ch):
+ li=xbmcgui.ListItem(label=ch['name'])
+ if ch['logo']: li.setArt({'thumb':ch['logo'],'icon':ch['logo'],'fanart':ch['logo']})
+ li.setInfo('video',{'title':ch['name'],'mediatype':'video'})
+ li.setProperty('IsPlayable','true')
+ url=f"{sys.argv[0]}?action=play&url={urllib.parse.quote(ch['url'])}"
+ xbmcplugin.addDirectoryItem(HANDLE,url,li,False)
+def play_stream(url,catchup='',catchup_days=0,shift=0):
+ li=xbmcgui.ListItem(path=url)
+ props=get_stream_properties(url)
+ if props['inputstream']: li.setProperty('inputstream',props['inputstream']);li.setProperty('inputstream.adaptive.manifest_type',props['manifest_type']);li.setMimeType(props['mimetype'])
+ if catchup and catchup_days: li.setProperty('inputstream.adaptive.catchup','true');li.setProperty('inputstream.adaptive.catchup-source',catchup);li.setProperty('inputstream.adaptive.catchup-days',str(catchup_days));li.setProperty('inputstream.adaptive.timeshift',str(shift))
+ max_retries=int(ADDON.getSetting('retry_attempts'))
+ timeout=int(ADDON.getSetting('connection_timeout'))
+ for attempt in range(max_retries+1):
+  try: xbmcplugin.setResolvedUrl(HANDLE,True,li);break
+  except Exception as e:
+   if attempt==max_retries: xbmcgui.Dialog().notification('Error',f'Playback failed: {str(e)}',xbmcgui.NOTIFICATION_ERROR,5000)
+   xbmc.sleep(1000)
+def router():
+ params=dict(urllib.parse.parse_qsl(sys.argv[2][1:]))
+ action=params.get('action')
+ if action is None: show_categories()
+ elif action=='category': show_category(urllib.parse.unquote(params['name']))
+ elif action=='play': play_stream(urllib.parse.unquote(params['url']))
+if __name__=='__main__': router()`;
+}
+
+// --- Channel Preview ---
+function renderChannelPreview(channels){
+const container=document.getElementById('channelPreview');
+if(channels.length===0){container.innerHTML='<p>No channels to display.</p>';return;}
+let html='<table class="channel-table"><tr><th>Logo</th><th>Name</th><th>Group</th><th>EPG</th><th>Catchup</th><th>URL</th></tr>';
+channels.forEach(ch=>{html+=`<tr><td>${ch.logo?`<img class="channel-logo" src="${ch.logo}" alt="${ch.name}" style="width:50px;height:auto;">`:'-'}</td><td>${ch.name}</td><td>${ch.group}</td><td>${ch.epg||'-'}</td><td>${ch.catchup||'-'}</td><td><a href="${ch.url}" target="_blank">Link</a></td></tr>`;});
+html+='</table>';
+container.innerHTML=html;
+}
+function generateAddonPreview(){
+try{
+const content=document.getElementById('m3uContent').value;if(!content.trim())return alert("Please provide M3U content first!");
+const channels=parseM3U(content);renderChannelPreview(channels);
+document.getElementById('result').textContent=JSON.stringify(channels,null,2);showTab('preview');
+}catch(e){document.getElementById('result').innerHTML=`<div class="error-message">Error: ${e.message}</div>`;}
+}
+// --- Analytics ---
+function showAnalytics(){
+    try {
+        const content = document.getElementById('m3uContent').value;
+        if(!content.trim()) return alert("Please provide M3U content first!");
+        const channels = parseM3U(content);
+        const total = channels.length;
+        const missingLogo = channels.filter(ch => !ch.logo).length;
+        const missingEPG = channels.filter(ch => !ch.epg).length;
+        const invalidUrl = channels.filter(ch => !ch.url).length;
+
+        const result = `
+Total Channels: ${total}
+Missing Logo: ${missingLogo}
+Missing EPG: ${missingEPG}
+Invalid URL: ${invalidUrl}`;
+        document.getElementById('analyticsResult').textContent = result;
+        showTab('analytics');
+    } catch(e) {
+        document.getElementById('analyticsResult').textContent = `Error: ${e.message}`;
+    }
+}
+
+// --- Test Stream Player ---
+function testStream(){
+    const url = document.getElementById('testUrl').value;
+    const player = document.getElementById('videoPlayer');
+    if(!url) return alert("Enter a stream URL!");
+    player.src = url;
+    player.play();
+}
+
+// --- ZIP Download ---
+async function downloadAddonZip(){
+    try {
+        const content = document.getElementById('m3uContent').value;
+        if(!content.trim()) return alert("Please provide M3U content first!");
+        const channels = parseM3U(content);
+
+        const zip = new JSZip();
+        const addonId = document.getElementById('addonId').value;
+        const addonFolder = zip.folder(addonId);
+
+        // Addon files
+        addonFolder.file('addon.xml', generateAddonXml(
+            addonId,
+            document.getElementById('addonName').value,
+            document.getElementById('version').value
+        ));
+        addonFolder.file('default.py', generateDefaultPy(channels));
+
+        // Resources
+        const resFolder = addonFolder.folder('resources');
+        resFolder.file('settings.xml', generateSettingsXml());
+        const mediaFolder = resFolder.folder('media');
+        mediaFolder.file('icon.png',''); // optional placeholder
+        mediaFolder.file('fanart.jpg',''); // optional placeholder
+
+        // Generate blob and download
+        const blob = await zip.generateAsync({type:"blob"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${addonId}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        document.getElementById('result').innerHTML = '<div class="success-message">Addon ZIP successfully generated!</div>';
+    } catch(e){
+        document.getElementById('result').innerHTML = `<div class="error-message">Error: ${e.message}</div>`;
+    }
+}
+</script>
+</body>
+</html>
